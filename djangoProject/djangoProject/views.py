@@ -3,17 +3,21 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 
 from .form import ImageUploadForm
+from . import settings
+import os
 from deepface import DeepFace
 from PIL import Image
+
 import time
 import tempfile
+
+
 def upload_image(request):
     if request.method == 'POST':
         return JsonResponse({'error': 'Invalid request method.'}, status=400)
     else:
         timestamp = int(time.time())
         return render(request, 'upload.html', {'timestamp': timestamp})
-
 
 
 def upload_and_compare(request):
@@ -46,3 +50,72 @@ def upload_and_compare(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+
+def face_search(request):
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+        print(2)  # 调试信息
+        if not image:
+            return JsonResponse({'error': 'Image is required.'}, status=400)
+
+        try:
+            img = Image.open(image)
+
+            print("Image opened successfully")  # 调试信息
+            with tempfile.NamedTemporaryFile(dir='./media/images', suffix='.png', delete=False) as temp:
+                img.save(temp, format='PNG')
+                temp.flush()
+
+                print(f"Image saved to temporary file: {temp.name}")  # 调试信息
+                faces = DeepFace.extract_faces(img_path=temp.name, detector_backend='opencv')
+                print(f"Faces detected: {len(faces)}")  # 调试信息
+
+                face_num = len(faces)
+
+                return JsonResponse({'face_num': face_num}, status=200)
+        except Exception as e:
+            print(f"Exception occurred: {e}")  # 调试信息
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+
+def face_analyse(request):
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+        print(3)  # 调试信息
+        if not image:
+            return JsonResponse({'error': 'Image is required.'}, status=400)
+
+        try:
+            img = Image.open(image)
+
+            print("Image opened successfully")  # 调试信息
+            with tempfile.NamedTemporaryFile(dir='./media/images', suffix='.png', delete=False) as temp:
+                img.save(temp, format='PNG')
+                temp.flush()
+
+                print(f"Image saved to temporary file: {temp.name}")  # 调试信息
+                faces = DeepFace.analyze(img_path=temp.name, detector_backend='opencv')
+
+                return JsonResponse(
+                    {'age': faces[0]['age'], 'gender': max(faces[0]['gender'], key=lambda k: faces[0]['gender'][k]),
+                     'emotion': max(faces[0]['emotion'], key=lambda k: faces[0]['emotion'][k]),
+                     'race': max(faces[0]['race'], key=lambda k: faces[0]['race'][k])}, status=200)
+        except Exception as e:
+            print(f"Exception occurred: {e}")  # 调试信息
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+
+def show_dataset(request):
+    test_dataset_dir = os.path.join(settings.VGG2_FACE_DIR, 'vggface2_test/test/')
+    test_dataset_dir1 = os.path.join(test_dataset_dir, 'n000001/')
+    images = [f for f in os.listdir(test_dataset_dir1) if os.path.isfile(os.path.join(test_dataset_dir1, f))]
+    DeepFace.analyze()
+    # 将图片路径传递到模板
+    context = {
+        'images': images,
+        'dataset_dir': test_dataset_dir1
+    }
+    return render(request, 'show_dataset.html', context)

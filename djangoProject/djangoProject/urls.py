@@ -22,4 +22,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('upload/', views.upload_image, name='upload_image'),
     path('compare/', views.upload_and_compare, name='upload_and_compare'),
+    path('face_search/', views.face_search, name='face_search'),
+    path('show_dataset/', views.show_dataset, name='show_dataset'),
+    path('face_analyse/', views.face_analyse, name='face_analyse'),
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
