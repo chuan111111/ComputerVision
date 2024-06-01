@@ -1,0 +1,357 @@
+Index: .idea/.gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+new file mode 100644
+--- /dev/null	
++++ b/.idea/.gitignore	
+@@ -0,0 +1,8 @@
++# Default ignored files
++/shelf/
++/workspace.xml
++# Editor-based HTTP Client requests
++/httpRequests/
++# Datasource local storage ignored files
++/dataSources/
++/dataSources.local.xml
+Index: templates/show_dataset.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/templates/show_dataset.html b/templates/show_dataset.html
+new file mode 100644
+--- /dev/null	
++++ b/templates/show_dataset.html	
+@@ -0,0 +1,24 @@
++{% load static %}
++<!DOCTYPE html>
++<html lang="en">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>Dataset Viewer</title>
++    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
++    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
++    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
++</head>
++<body>
++    <div class="container">
++        <h1 class="mt-5">FFHQ Dataset Viewer</h1>
++        <div class="row">
++            {% for image in images %}
++                <div class="col-md-3">
++                    <img src="{% static dataset_dir %}/{{ image }}" class="img-fluid img-thumbnail" alt="{{ image }}">
++                </div>
++            {% endfor %}
++        </div>
++    </div>
++</body>
++</html>
+Index: templates/upload.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!DOCTYPE html>\r\n{% load static %}\r\n\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n    <title>Face Recognition Website</title>\r\n    <!-- Bootstrap CSS -->\r\n    <link href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\" rel=\"stylesheet\">\r\n    <!-- jQuery -->\r\n    <script src=\"https://code.jquery.com/jquery-3.5.1.min.js\"></script>\r\n    <!-- Bootstrap JS -->\r\n    <script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js\"></script>\r\n</head>\r\n<body>\r\n    <div class=\"container\">\r\n        <h1 class=\"mt-5\">Face Recognition Website</h1>\r\n        <!-- Navigation -->\r\n        <ul class=\"nav nav-tabs mt-3\">\r\n            <li class=\"nav-item\">\r\n                <a class=\"nav-link active\" id=\"faceRecognitionTab\" data-toggle=\"tab\" href=\"#faceRecognition\">Face Recognition</a>\r\n            </li>\r\n            <li class=\"nav-item\">\r\n                <a class=\"nav-link\" id=\"faceSearchTab\" data-toggle=\"tab\" href=\"#faceSearch\">Face Search</a>\r\n            </li>\r\n            <!-- Add more tabs for other functionalities -->\r\n        </ul>\r\n        <!-- Tab Content -->\r\n        <div class=\"tab-content mt-3\">\r\n            <!-- Face Recognition Tab -->\r\n            <div id=\"faceRecognition\" class=\"tab-pane fade show active\">\r\n                <!-- Sample Image and Form for Face Recognition -->\r\n                <h3 class=\"mt-3\">Face Recognition</h3>\r\n                <div class=\"row\">\r\n                    <div class=\"col-md-6\">\r\n                        <h5>Sample Image:</h5>\r\n                        <img src=\"{% static 'img.png' %}?v={{ timestamp }}\" class=\"img-fluid rounded mb-3\" alt=\"Sample Face 1\">\r\n                        <img src=\"{% static 'img_1.png' %}?v={{ timestamp }}\" class=\"img-fluid rounded\" alt=\"Sample Face 2\">\r\n                    </div>\r\n                    <div class=\"col-md-6\">\r\n                        <h5>Upload Images:</h5>\r\n                        <form id=\"faceRecognitionForm\" enctype=\"multipart/form-data\">\r\n                            {% csrf_token %}\r\n                            <input type=\"file\" name=\"image1\" class=\"form-control mb-2\" accept=\"image/*\" required>\r\n                            <input type=\"file\" name=\"image2\" class=\"form-control mb-2\" accept=\"image/*\" required>\r\n                            <button type=\"submit\" class=\"btn btn-primary\">Upload</button>\r\n                        </form>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n            <!-- Face Search Tab -->\r\n            <div id=\"faceSearch\" class=\"tab-pane fade\">\r\n             \r\n            </div>\r\n            <!-- Add more tab content for other functionalities -->\r\n        </div>\r\n    </div>\r\n\r\n    <!-- JavaScript for handling image upload and result display -->\r\n    <script>\r\n        $(document).ready(function() {\r\n            // Submit form for face recognition\r\n            $('#faceRecognitionForm').submit(function(event) {\r\n                event.preventDefault();\r\n                var formData = new FormData($(this)[0]);\r\n                $.ajax({\r\n                    type: 'POST',\r\n                    url: '{% url \"upload_and_compare\" %}',\r\n                    data: formData,\r\n                    contentType: false,\r\n                    processData: false,\r\n                    success: function(response) {\r\n                        // 构建模态框内容\r\n                        var resultMessage = '';\r\n                        if (response.verified === true) {\r\n                            resultMessage = 'Same person';\r\n                        } else {\r\n                            resultMessage = 'Not the same person. Similarity metric: ' + response.similarity_metric;\r\n                        }\r\n\r\n                        $('#faceRecognitionResultModal .modal-body').text(resultMessage);\r\n                        $('#faceRecognitionResultModal').modal('show');\r\n                    },\r\n                    error: function(xhr, status, error) {\r\n                        console.error(xhr.responseText);\r\n                    }\r\n                });\r\n            });\r\n            // Add similar JavaScript for other functionalities\r\n        });\r\n    </script>\r\n\r\n    <!-- Modal for displaying result -->\r\n    <div class=\"modal fade\" id=\"faceRecognitionResultModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"faceRecognitionResultModalLabel\" aria-hidden=\"true\">\r\n        <div class=\"modal-dialog\" role=\"document\">\r\n            <div class=\"modal-content\">\r\n                <div class=\"modal-header\">\r\n                    <h5 class=\"modal-title\" id=\"faceRecognitionResultModalLabel\">Face Recognition Result</h5>\r\n                    <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\r\n                        <span aria-hidden=\"true\">&times;</span>\r\n                    </button>\r\n                </div>\r\n                <div class=\"modal-body\">\r\n                    <!-- Result will be displayed here -->\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</body>\r\n</html>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/templates/upload.html b/templates/upload.html
+--- a/templates/upload.html	(revision 59bcc258f762d932c40f12226a2c3232748fccef)
++++ b/templates/upload.html	(date 1717248371747)
+@@ -24,6 +24,9 @@
+             <li class="nav-item">
+                 <a class="nav-link" id="faceSearchTab" data-toggle="tab" href="#faceSearch">Face Search</a>
+             </li>
++            <li class="nav-item">
++                <a class="nav-link" id="faceAnalyseTab" data-toggle="tab" href="#faceAnalyse">Face Analyse</a>
++            </li>
+             <!-- Add more tabs for other functionalities -->
+         </ul>
+         <!-- Tab Content -->
+@@ -50,9 +53,23 @@
+                 </div>
+             </div>
+             <!-- Face Search Tab -->
+-            <div id="faceSearch" class="tab-pane fade">
+-             
++            <div id="faceSearch" class="tab-pane fade show active">
++                <!-- Face Search Tab Content -->
++                <h3 class="mt-3">Face Search</h3>
++                <form id="faceSearchForm" enctype="multipart/form-data">
++                    {% csrf_token %}
++                    <input type="file" name="image" class="form-control mb-2" accept="image/*" required>
++                    <button type="submit" class="btn btn-primary">Search Faces</button>
++                </form>
+             </div>
++            <div id="faceAnalyse" class="tab-pane fade show active">
++                <h3 class="mt-3">Face Analyse</h3>
++                <form id="faceAnalyseForm" enctype="multipart/form-data">
++                    {% csrf_token %}
++                    <input type="file" name="image" class="form-control mb-2" accept="image/*" required>
++                    <button type="submit" class="btn btn-primary">Analyse Faces</button>
++                </form>
++            </div>            
+             <!-- Add more tab content for other functionalities -->
+         </div>
+     </div>
+@@ -88,7 +105,60 @@
+                 });
+             });
+             // Add similar JavaScript for other functionalities
++            $('#faceSearchForm').submit(function(event) {
++                event.preventDefault();
++                var formData = new FormData($(this)[0]);
++                $.ajax({
++                    type: 'POST',
++                    url: '{% url "face_search" %}',
++                    data: formData,
++                    contentType: false,
++                    processData: false,
++                    success: function(response) {
++                        
++                        var resultMessage = '';
++                        
++                        resultMessage = ''+ response['face_num']+' faces is found';
++                 
++
++                        $('#faceSearchResultModal .modal-body').text(resultMessage);
++                        $('#faceSearchResultModal').modal('show');
++                    },
++                        // 处理和显示检测到的人脸
++
++                    error: function(xhr, status, error) {
++                        console.error(xhr.responseText);
++                    }
++                });
++            });    
++            $('#faceAnalyseForm').submit(function(event) {
++                event.preventDefault();
++                var formData = new FormData($(this)[0]);
++                $.ajax({
++                    type: 'POST',
++                    url: '{% url "face_analyse" %}',
++                    data: formData,
++                    contentType: false,
++                    processData: false,
++                    success: function(response) {
++                        
++                        var resultMessage = '';
++                        
++                        resultMessage = 'age : '+ response['age']+'\ngender : '+response['gender']+'\nemotion : '+response['emotion']+'\nrace : '+response['race'];
++                 
++
++                        $('#faceAnalyseResultModal .modal-body').text(resultMessage);
++                        $('#faceAnalyseResultModal').modal('show');
++                    },
++                        // 处理和显示检测到的人脸
++
++                    error: function(xhr, status, error) {
++                        console.error(xhr.responseText);
++                    }
++                });                
++            });    
+         });
++  
+     </script>
+ 
+     <!-- Modal for displaying result -->
+@@ -97,9 +167,40 @@
+             <div class="modal-content">
+                 <div class="modal-header">
+                     <h5 class="modal-title" id="faceRecognitionResultModalLabel">Face Recognition Result</h5>
+-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
++                    <abutton type="button" class="close" data-dismiss="modal" aria-label="Close">
++                        <span aria-hidden="true">&times;</span>
++                    </abutton>
++                </div>
++                <div class="modal-body">
++                    <!-- Result will be displayed here -->
++                </div>
++            </div>
++        </div>
++    </div>
++
++     <div class="modal fade" id="faceSearchResultModal" tabindex="-1" role="dialog" aria-labelledby="faceSearchResultModalLabel" aria-hidden="true">
++        <div class="modal-dialog" role="document">
++            <div class="modal-content">
++                <div class="modal-header">
++                    <h5 class="modal-title" id="faceSearchResultModalLabel">Face Recognition Result</h5>
++                    <abutton type="button" class="close" data-dismiss="modal" aria-label="Close">
+                         <span aria-hidden="true">&times;</span>
+-                    </button>
++                    </abutton>
++                </div>
++                <div class="modal-body">
++                    <!-- Result will be displayed here -->
++                </div>
++            </div>
++        </div>
++    </div>
++     <div class="modal fade" id="faceAnalyseResultModal" tabindex="-1" role="dialog" aria-labelledby="faceAnalyseResultModalLabel" aria-hidden="true">
++        <div class="modal-dialog" role="document">
++            <div class="modal-content">
++                <div class="modal-header">
++                    <h5 class="modal-title" id="faceAnalyseResultModalLabel">Face Analyse Result</h5>
++                    <abutton type="button" class="close" data-dismiss="modal" aria-label="Close">
++                        <span aria-hidden="true">&times;</span>
++                    </abutton>
+                 </div>
+                 <div class="modal-body">
+                     <!-- Result will be displayed here -->
+Index: djangoProject/settings.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\"\"\"\r\nDjango settings for djangoProject project.\r\n\r\nGenerated by 'django-admin startproject' using Django 4.0.1.\r\n\r\nFor more information on this file, see\r\nhttps://docs.djangoproject.com/en/4.0/topics/settings/\r\n\r\nFor the full list of settings and their values, see\r\nhttps://docs.djangoproject.com/en/4.0/ref/settings/\r\n\"\"\"\r\n\r\nfrom pathlib import Path\r\nimport os\r\n\r\n# Build paths inside the project like this: BASE_DIR / 'subdir'.\r\nBASE_DIR = Path(__file__).resolve().parent.parent\r\n\r\n\r\n# Quick-start development settings - unsuitable for production\r\n# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/\r\n\r\n# SECURITY WARNING: keep the secret key used in production secret!\r\nSECRET_KEY = 'django-insecure-de$cx!5z3-rk$ec=$*z$)+t&#05bqcxx1502spsph6qmyva%*u'\r\n\r\n# SECURITY WARNING: don't run with debug turned on in production!\r\nDEBUG = True\r\n\r\nALLOWED_HOSTS = []\r\nSTATIC_URL = '/static/'\r\nSTATICFILES_DIRS = [\r\n    os.path.join(BASE_DIR, 'static')\r\n]\r\n\r\n# Application definition\r\n\r\nINSTALLED_APPS = [\r\n    'django.contrib.admin',\r\n    'django.contrib.auth',\r\n    'django.contrib.contenttypes',\r\n    'django.contrib.sessions',\r\n    'django.contrib.messages',\r\n    'django.contrib.staticfiles',\r\n    'djangoProject',\r\n]\r\n\r\nMIDDLEWARE = [\r\n    'django.middleware.security.SecurityMiddleware',\r\n    'django.contrib.sessions.middleware.SessionMiddleware',\r\n    'django.middleware.common.CommonMiddleware',\r\n    'django.middleware.csrf.CsrfViewMiddleware',\r\n    'django.contrib.auth.middleware.AuthenticationMiddleware',\r\n    'django.contrib.messages.middleware.MessageMiddleware',\r\n    'django.middleware.clickjacking.XFrameOptionsMiddleware',\r\n]\r\n\r\nROOT_URLCONF = 'djangoProject.urls'\r\n\r\nTEMPLATES = [\r\n    {\r\n        'BACKEND': 'django.template.backends.django.DjangoTemplates',\r\n        'DIRS': [BASE_DIR / 'templates']\r\n        ,\r\n        'APP_DIRS': True,\r\n        'OPTIONS': {\r\n            'context_processors': [\r\n                'django.template.context_processors.debug',\r\n                'django.template.context_processors.request',\r\n                'django.contrib.auth.context_processors.auth',\r\n                'django.contrib.messages.context_processors.messages',\r\n            ],\r\n        },\r\n    },\r\n]\r\n\r\nWSGI_APPLICATION = 'djangoProject.wsgi.application'\r\n\r\n\r\n# Database\r\n# https://docs.djangoproject.com/en/4.0/ref/settings/#databases\r\n\r\nDATABASES = {\r\n    'default': {\r\n        'ENGINE': 'django.db.backends.sqlite3',\r\n        'NAME': BASE_DIR / 'db.sqlite3',\r\n    }\r\n}\r\n\r\n\r\n# Password validation\r\n# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators\r\n\r\nAUTH_PASSWORD_VALIDATORS = [\r\n    {\r\n        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',\r\n    },\r\n    {\r\n        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',\r\n    },\r\n    {\r\n        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',\r\n    },\r\n    {\r\n        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',\r\n    },\r\n]\r\nMEDIA_URL = '/media/'\r\nMEDIA_ROOT = BASE_DIR / 'media'\r\n\r\n# Internationalization\r\n# https://docs.djangoproject.com/en/4.0/topics/i18n/\r\n\r\nLANGUAGE_CODE = 'en-us'\r\n\r\nTIME_ZONE = 'UTC'\r\n\r\nUSE_I18N = True\r\n\r\nUSE_TZ = True\r\n\r\n\r\n# Static files (CSS, JavaScript, Images)\r\n# https://docs.djangoproject.com/en/4.0/howto/static-files/\r\n\r\nSTATIC_URL = 'static/'\r\n\r\n# Default primary key field type\r\n# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field\r\n\r\nDEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/djangoProject/settings.py b/djangoProject/settings.py
+--- a/djangoProject/settings.py	(revision 59bcc258f762d932c40f12226a2c3232748fccef)
++++ b/djangoProject/settings.py	(date 1717248371746)
+@@ -128,3 +128,15 @@
+ # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
+ 
+ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
++
++VGG2_FACE_DIR = "C:/Users/peter/VGG-Face2/data/"
++
++# 项目根目录
++BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++
++
++STATICFILES_DIRS = [
++    os.path.join(BASE_DIR, 'static'),
++
++]
++
+Index: djangoProject/urls.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\"\"\"djangoProject URL Configuration\r\n\r\nThe `urlpatterns` list routes URLs to views. For more information please see:\r\n    https://docs.djangoproject.com/en/4.0/topics/http/urls/\r\nExamples:\r\nFunction views\r\n    1. Add an import:  from my_app import views\r\n    2. Add a URL to urlpatterns:  path('', views.home, name='home')\r\nClass-based views\r\n    1. Add an import:  from other_app.views import Home\r\n    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')\r\nIncluding another URLconf\r\n    1. Import the include() function: from django.urls import include, path\r\n    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))\r\n\"\"\"\r\nfrom django.contrib import admin\r\nfrom django.urls import path\r\nfrom . import views\r\nfrom django.conf import settings\r\nfrom django.conf.urls.static import static\r\nurlpatterns = [\r\n    path('admin/', admin.site.urls),\r\n    path('upload/', views.upload_image, name='upload_image'),\r\n    path('compare/', views.upload_and_compare, name='upload_and_compare'),\r\n]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/djangoProject/urls.py b/djangoProject/urls.py
+--- a/djangoProject/urls.py	(revision 59bcc258f762d932c40f12226a2c3232748fccef)
++++ b/djangoProject/urls.py	(date 1717248371746)
+@@ -22,4 +22,8 @@
+     path('admin/', admin.site.urls),
+     path('upload/', views.upload_image, name='upload_image'),
+     path('compare/', views.upload_and_compare, name='upload_and_compare'),
++    path('face_search/', views.face_search, name='face_search'),
++    path('show_dataset/', views.show_dataset, name='show_dataset'),
++    path('face_analyse/', views.face_analyse, name='face_analyse'),
++
+ ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+Index: djangoProject/views.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># djangoProject/views.py\r\nfrom django.shortcuts import render, get_object_or_404\r\nfrom django.http import JsonResponse\r\n\r\nfrom .form import ImageUploadForm\r\nfrom deepface import DeepFace\r\nfrom PIL import Image\r\nimport time\r\nimport tempfile\r\ndef upload_image(request):\r\n    if request.method == 'POST':\r\n        return JsonResponse({'error': 'Invalid request method.'}, status=400)\r\n    else:\r\n        timestamp = int(time.time())\r\n        return render(request, 'upload.html', {'timestamp': timestamp})\r\n\r\n\r\n\r\ndef upload_and_compare(request):\r\n    if request.method == 'POST':\r\n        image1 = request.FILES.get('image1')\r\n        image2 = request.FILES.get('image2')\r\n        print(1)\r\n        if not image1 or not image2:\r\n            return JsonResponse({'error': 'Both images are required.'}, status=400)\r\n\r\n        try:\r\n            # 使用PIL打开图片\r\n            img1 = Image.open(image1)\r\n            img2 = Image.open(image2)\r\n\r\n            # 创建临时文件\r\n            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp1, tempfile.NamedTemporaryFile(\r\n                    suffix='.png', delete=False) as temp2:\r\n                # 将图片保存到临时文件\r\n                img1.save(temp1, format='PNG')\r\n                img2.save(temp2, format='PNG')\r\n\r\n                temp1.flush()\r\n                temp2.flush()\r\n\r\n                # 使用DeepFace进行比较\r\n                resp = DeepFace.verify(img1_path=temp1.name, img2_path=temp2.name, model_name='VGG-Face')\r\n\r\n                return JsonResponse(resp)\r\n        except Exception as e:\r\n            return JsonResponse({'error': str(e)}, status=500)\r\n    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/djangoProject/views.py b/djangoProject/views.py
+--- a/djangoProject/views.py	(revision 59bcc258f762d932c40f12226a2c3232748fccef)
++++ b/djangoProject/views.py	(date 1717248371747)
+@@ -3,10 +3,15 @@
+ from django.http import JsonResponse
+ 
+ from .form import ImageUploadForm
++from . import settings
++import os
+ from deepface import DeepFace
+ from PIL import Image
++
+ import time
+ import tempfile
++
++
+ def upload_image(request):
+     if request.method == 'POST':
+         return JsonResponse({'error': 'Invalid request method.'}, status=400)
+@@ -15,7 +20,6 @@
+         return render(request, 'upload.html', {'timestamp': timestamp})
+ 
+ 
+-
+ def upload_and_compare(request):
+     if request.method == 'POST':
+         image1 = request.FILES.get('image1')
+@@ -45,4 +49,73 @@
+                 return JsonResponse(resp)
+         except Exception as e:
+             return JsonResponse({'error': str(e)}, status=500)
+-    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+\ No newline at end of file
++    return JsonResponse({'error': 'Invalid request method.'}, status=400)
++
++
++def face_search(request):
++    if request.method == 'POST':
++        image = request.FILES.get('image')
++        print(2)  # 调试信息
++        if not image:
++            return JsonResponse({'error': 'Image is required.'}, status=400)
++
++        try:
++            img = Image.open(image)
++
++            print("Image opened successfully")  # 调试信息
++            with tempfile.NamedTemporaryFile(dir='./media/images', suffix='.png', delete=False) as temp:
++                img.save(temp, format='PNG')
++                temp.flush()
++
++                print(f"Image saved to temporary file: {temp.name}")  # 调试信息
++                faces = DeepFace.extract_faces(img_path=temp.name, detector_backend='opencv')
++                print(f"Faces detected: {len(faces)}")  # 调试信息
++
++                face_num = len(faces)
++
++                return JsonResponse({'face_num': face_num}, status=200)
++        except Exception as e:
++            print(f"Exception occurred: {e}")  # 调试信息
++            return JsonResponse({'error': str(e)}, status=500)
++    return JsonResponse({'error': 'Invalid request method.'}, status=400)
++
++
++def face_analyse(request):
++    if request.method == 'POST':
++        image = request.FILES.get('image')
++        print(3)  # 调试信息
++        if not image:
++            return JsonResponse({'error': 'Image is required.'}, status=400)
++
++        try:
++            img = Image.open(image)
++
++            print("Image opened successfully")  # 调试信息
++            with tempfile.NamedTemporaryFile(dir='./media/images', suffix='.png', delete=False) as temp:
++                img.save(temp, format='PNG')
++                temp.flush()
++
++                print(f"Image saved to temporary file: {temp.name}")  # 调试信息
++                faces = DeepFace.analyze(img_path=temp.name, detector_backend='opencv')
++
++                return JsonResponse(
++                    {'age': faces[0]['age'], 'gender': max(faces[0]['gender'], key=lambda k: faces[0]['gender'][k]),
++                     'emotion': max(faces[0]['emotion'], key=lambda k: faces[0]['emotion'][k]),
++                     'race': max(faces[0]['race'], key=lambda k: faces[0]['race'][k])}, status=200)
++        except Exception as e:
++            print(f"Exception occurred: {e}")  # 调试信息
++            return JsonResponse({'error': str(e)}, status=500)
++    return JsonResponse({'error': 'Invalid request method.'}, status=400)
++
++
++def show_dataset(request):
++    test_dataset_dir = os.path.join(settings.VGG2_FACE_DIR, 'vggface2_test/test/')
++    test_dataset_dir1 = os.path.join(test_dataset_dir, 'n000001/')
++    images = [f for f in os.listdir(test_dataset_dir1) if os.path.isfile(os.path.join(test_dataset_dir1, f))]
++    DeepFace.analyze()
++    # 将图片路径传递到模板
++    context = {
++        'images': images,
++        'dataset_dir': test_dataset_dir1
++    }
++    return render(request, 'show_dataset.html', context)
