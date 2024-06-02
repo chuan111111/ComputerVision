@@ -128,3 +128,27 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+VGG2_FACE_DIR = "C:/Users/peter/VGG-Face2/data/"
+
+# 项目根目录
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+
+]
+
+
+VGG2_FACE_DIR = "C:/Users/peter/VGG-Face2/data/"
+
+# 项目根目录
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+
+]
+

@@ -24,6 +24,9 @@
             <li class="nav-item">
                 <a class="nav-link" id="faceSearchTab" data-toggle="tab" href="#faceSearch">Face Search</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" id="faceAnalyseTab" data-toggle="tab" href="#faceAnalyse">Face Analyse</a>
+            </li>
             <!-- Add more tabs for other functionalities -->
         </ul>
         <!-- Tab Content -->
@@ -50,8 +53,22 @@
                 </div>
             </div>
             <!-- Face Search Tab -->
-            <div id="faceSearch" class="tab-pane fade">
-             
+            <div id="faceSearch" class="tab-pane fade show active">
+                <!-- Face Search Tab Content -->
+                <h3 class="mt-3">Face Search</h3>
+                <form id="faceSearchForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" name="image" class="form-control mb-2" accept="image/*" required>
+                    <button type="submit" class="btn btn-primary">Search Faces</button>
+                </form>
+            </div>
+            <div id="faceAnalyse" class="tab-pane fade show active">
+                <h3 class="mt-3">Face Analyse</h3>
+                <form id="faceAnalyseForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" name="image" class="form-control mb-2" accept="image/*" required>
+                    <button type="submit" class="btn btn-primary">Analyse Faces</button>
+                </form>
             </div>
             <!-- Add more tab content for other functionalities -->
         </div>
@@ -88,7 +105,60 @@
                 });
             });
             // Add similar JavaScript for other functionalities
+            $('#faceSearchForm').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData($(this)[0]);
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "face_search" %}',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+
+                        var resultMessage = '';
+
+                        resultMessage = ''+ response['face_num']+' faces is found';
+
+
+                        $('#faceSearchResultModal .modal-body').text(resultMessage);
+                        $('#faceSearchResultModal').modal('show');
+                    },
+                        // 处理和显示检测到的人脸
+
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+            $('#faceAnalyseForm').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData($(this)[0]);
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "face_analyse" %}',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+
+                        var resultMessage = '';
+
+                        resultMessage = 'age : '+ response['age']+'\ngender : '+response['gender']+'\nemotion : '+response['emotion']+'\nrace : '+response['race'];
+
+
+                        $('#faceAnalyseResultModal .modal-body').text(resultMessage);
+                        $('#faceAnalyseResultModal').modal('show');
+                    },
+                        // 处理和显示检测到的人脸
+
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
         });
+
     </script>
 
     <!-- Modal for displaying result -->
@@ -97,9 +167,40 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="faceRecognitionResultModalLabel">Face Recognition Result</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <abutton type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
-                    </button>
+                    </abutton>
+                </div>
+                <div class="modal-body">
+                    <!-- Result will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <div class="modal fade" id="faceSearchResultModal" tabindex="-1" role="dialog" aria-labelledby="faceSearchResultModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="faceSearchResultModalLabel">Face Recognition Result</h5>
+                    <abutton type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </abutton>
+                </div>
+                <div class="modal-body">
+                    <!-- Result will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+     <div class="modal fade" id="faceAnalyseResultModal" tabindex="-1" role="dialog" aria-labelledby="faceAnalyseResultModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="faceAnalyseResultModalLabel">Face Analyse Result</h5>
+                    <abutton type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </abutton>
                 </div>
                 <div class="modal-body">
                     <!-- Result will be displayed here -->
