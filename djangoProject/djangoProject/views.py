@@ -1,4 +1,6 @@
 # djangoProject/views.py
+import shutil
+
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 
@@ -47,6 +49,52 @@ def upload_and_compare(request):
                 resp = DeepFace.verify(img1_path=temp1.name, img2_path=temp2.name, model_name='VGG-Face')
 
                 return JsonResponse(resp)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+def face_find(request):
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+
+        print(2)
+        if not image :
+            return JsonResponse({'error': 'image are required.'}, status=400)
+
+        try:
+            # image1_path = 'dataset/img.png'
+            # resp = DeepFace.find(img_path=image1_path,
+            #                      db_path="D:/Users/hasee/Documents/GitHub/ComputerVision/djangoProject/dataset",
+            #                      model_name='VGG-Face', distance_metric='cosine')
+            # print(resp)
+            # 使用PIL打开图片
+            img = Image.open(image)
+
+            print('image ok')
+            # 创建临时文件
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp:
+                # 将图片保存到临时文件
+                img.save(temp, format='PNG')
+                temp.flush()
+                print('ok')
+
+                # 使用DeepFace进行比较
+                resp = DeepFace.find(img_path=temp.name, db_path="D:/Users/hasee/Documents/GitHub/ComputerVision/djangoProject/dataset",model_name='VGG-Face', distance_metric='cosine')
+                print(resp[0]['identity'][0])
+                print(len(resp[0]['identity']))
+                if len(resp[0]['identity']) > 0:
+                    matched = resp[0]['identity'][0]
+                    # print(matched)
+                    # return JsonResponse({'matched_image': matched})
+                    filename = os.path.basename(matched)
+                    media_path = os.path.join(settings.MEDIA_ROOT, filename)
+                    shutil.copy(matched, media_path)
+
+                    # 返回媒体文件的URL
+                    matched_url = settings.MEDIA_URL + filename
+                    return JsonResponse({'matched_image': matched_url})
+                else:
+                    return JsonResponse({'error': 'No matching faces found.'}, status=404)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request method.'}, status=400)

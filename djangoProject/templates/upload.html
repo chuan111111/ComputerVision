@@ -44,6 +44,9 @@
             <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#faceAnalyse">Face Analyse</a>
             </li>
+              <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#faceFind">Face Find</a>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -56,6 +59,7 @@
                             alt="Sample Face 1">
                         <img src="{% static 'img_1.png' %}?v={{ timestamp }}" class="img-fluid rounded"
                             alt="Sample Face 2">
+                         <h5>It will return whether the two are the same person</h5>
                     </div>
                     <div class="col-md-6">
                         <h5>Upload Images:</h5>
@@ -86,6 +90,7 @@
 
             <div id="faceAnalyse" class="tab-pane fade">
                 <h3>Face Analyse</h3>
+
                 <form id="faceAnalyseForm" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
@@ -93,6 +98,28 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Analyse Faces</button>
                 </form>
+            </div>
+                 <div id="faceFind" class="tab-pane fade">
+                <h3>Face Find</h3>
+                      <div class="row">
+                    <div class="col-md-6">
+                        <h5>Sample Images:</h5>
+                        <img src="{% static 'img.png' %}?v={{ timestamp }}" class="img-fluid rounded mb-3"
+                            alt="Sample Face 1">
+
+                         <h5>It will return the most similar one in the dataset</h5>
+                    </div>
+                         <div class="col-md-6">
+                        <h5>Upload Images:</h5>
+                <form id="faceFindForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="file" name="image" class="form-control-file" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Analyse Faces</button>
+                </form>
+                      </div>
+                         </div>
             </div>
         </div>
     </div>
@@ -174,6 +201,31 @@
                         $('#resultModal .modal-body').text(resultMessage);
                         $('#resultModal').modal('show');
                     },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+            //Face find
+            $('#faceFindForm').submit(function (event) {
+                event.preventDefault();
+                var formData = new FormData($(this)[0]);
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "face_find" %}',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+
+                       var matchedImagePath = response['matched_image'];
+                       console.log(matchedImagePath)
+                    $('#resultModal .modal-title').text('Face Find Result:the most similar one:');
+                    $('#resultModal .modal-body').html('<img src="' + matchedImagePath + '" class="img-fluid"/>');
+                    $('#resultModal').modal('show');
+
+
+                },
                     error: function (xhr, status, error) {
                         console.error(xhr.responseText);
                     }
