@@ -12,7 +12,8 @@ from PIL import Image
 
 import time
 import tempfile
-
+import cv2
+import mediapipe as mp
 
 def upload_image(request):
     if request.method == 'POST':
@@ -154,8 +155,32 @@ def face_analyse(request):
             print(f"Exception occurred: {e}")  # 调试信息
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
+def video_face(request):
+    cap=cv2.VideoCapture("media/video/1.mp4")
+    pTime=0
+    mpFaceDetection=mp.solutions.face_detection
+    mpDraw=mp.solutions.drawing_utils
+    faceDetection=mpFaceDetection.FaceDetection(0.5)
+    while True:
+        success,img=cap.read()
+        imgRGB=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        results=faceDetection.process(imgRGB)
+        if results.detections:
+            for id,detection in enumerate(results.detections):
+                bboxc=detection.location_data.relative_bounding_box
+                ih,iw,ic=img.shape
+                bbox=int(bboxc.xmin * iw),int(bboxc.ymin * ih),\
+                     int(bboxc.width * iw),int(bboxc.height* ih)
+                cv2.rectangle(img,bbox,(255,0,255),2)
+                cv2.putText(img, f'{int(detection.score[0]*100)}%',
+                            (bbox[0], bbox[1]-20), cv2.FONT_HERSHEY_TRIPLEX, 2, (255, 0, 255), 2)
 
-
+        cTime=time.time()
+        fps=1/(cTime-pTime)
+        pTime=cTime
+        cv2.putText(img,f'FPS: {int(fps)}',(20,70),cv2.FONT_HERSHEY_TRIPLEX,3,(0,255,0),2)
+        cv2.imshow("Image:", img)
+        cv2.waitKey(1)
 def show_dataset(request):
     test_dataset_dir = os.path.join(settings.VGG2_FACE_DIR, 'vggface2_test/test/')
     test_dataset_dir1 = os.path.join(test_dataset_dir, 'n000001/')
